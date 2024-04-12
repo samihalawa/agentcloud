@@ -22,6 +22,10 @@ export type Credential = {
 		tokenURL?: string;
 		scope?: string;
 		tokenExchangeMethod?: TokenExchangeMethod;
+
+		//Note: litellm dev stuff
+		abi_base?: string;
+		api_key?: string;
 	};
     name: string;
     createdDate: Date;

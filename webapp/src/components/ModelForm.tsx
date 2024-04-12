@@ -129,6 +129,8 @@ export default function ModelForm({ _model = { type: CredentialType.OPENAI }, cr
 								<option disabled value=''>Select a type...</option>
 								<option value={CredentialType.OPENAI}>OpenAI</option>
 								<option value={CredentialType.FASTEMBED}>FastEmbed</option>
+								<option value={CredentialType.OLLAMA}>Ollama</option>
+								<option disabled value={CredentialType.HUGGING_FACE}>Hugging Face (Coming soon...)</option>
 							</select>
 						</div>
 					</div>
@@ -156,7 +158,7 @@ export default function ModelForm({ _model = { type: CredentialType.OPENAI }, cr
 										};
 									});
 				            	}}
-					            options={credentials.filter(c => c.type === type).map(c => ({ label: c.name, value: c._id })).concat([{ label: '+ Create new credential', value: null }])}
+					            options={credentials.map(c => ({ label: c.name, value: c._id })).concat([{ label: '+ Create new credential', value: null }])}
 					            formatOptionLabel={data => {
 									const optionCred = credentials.find(oc => oc._id === data.value);
 					                return (<li

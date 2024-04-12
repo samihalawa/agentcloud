@@ -20,7 +20,7 @@ export default function CredentialForm({ credential = { type: CredentialType.OPE
 	const [error, setError] = useState();
 	const { verifysuccess } = router.query;
 
-	const { name, type, key, endpointURL } = credentialState;
+	const { name, type, key, api_base } = credentialState;
 
 	async function credentialPost(e) {
 		e.preventDefault();
@@ -30,7 +30,7 @@ export default function CredentialForm({ credential = { type: CredentialType.OPE
 			name: e.target.name.value,
 			type: e.target.type.value,
 			key: e.target?.key?.value,
-			endpointURL: e.target?.endpointURL?.value,
+			api_base: e.target?.api_base?.value,
 		};
 		if (editing) {
 			//NOTE: no edit api for creds yet or maybe ever
@@ -94,13 +94,49 @@ export default function CredentialForm({ credential = { type: CredentialType.OPE
 								<option disabled value=''>Select a type...</option>
 								<option value={CredentialType.OPENAI}>OpenAI</option>
 								<option value={CredentialType.FASTEMBED}>FastEmbed</option>
+								<option value={CredentialType.OLLAMA}>Ollama</option>
+								<option disabled value={CredentialType.HUGGING_FACE}>Hugging Face (Coming soon...)</option>
 							</select>
 						</div>
 					</div>
 
-					{type !== CredentialType.FASTEMBED && <div className='sm:col-span-12'>
+					{[CredentialType.OPENAI].includes(type) && <div className='sm:col-span-12'>
 						<label htmlFor='key' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
-    Key
+							Key
+						</label>
+						<div className='mt-2'>
+							<input
+								required
+								type='password'
+								name='key'
+								id='key'
+								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
+							/>
+						</div>
+					</div>}
+
+					{/*
+						The `name` property of these inputs (for ollama, huggingface, etc) matches the litellm_params: http://localhost:4000/#/model%20management/add_new_model_model_new_post
+					*/}
+					{[CredentialType.OLLAMA].includes(type) && <div className='sm:col-span-12'>
+						<label htmlFor='api_base' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+							API Base URL
+						</label>
+						<div className='mt-2'>
+							<input
+								required
+								placeholder='http://localhost:11434'
+								type='text'
+								name='api_base'
+								id='api_base'
+								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
+							/>
+						</div>
+					</div>}
+
+					{type === CredentialType.HUGGING_FACE && <div className='sm:col-span-12'>
+						<label htmlFor='key' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+							Api Key
 						</label>
 						<div className='mt-2'>
 							<input

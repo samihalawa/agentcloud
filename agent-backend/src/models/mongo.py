@@ -24,6 +24,7 @@ class Platforms(str, Enum):
     ChatOpenAI = "open_ai"
     AzureChatOpenAI = "azure"
     FastEmbed = "fastembed"
+    Ollama = "ollama"
 
 
 class ModelType(str, Enum):

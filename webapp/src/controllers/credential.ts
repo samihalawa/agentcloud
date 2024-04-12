@@ -71,7 +71,7 @@ export async function credentialJson(app, req, res, next) {
  */
 export async function addCredentialApi(req, res, next) {
 
-	const { name, type, key, endpointURL }  = req.body;
+	const { name, type, key, api_base }  = req.body;
 
 	if (!name || typeof name !== 'string' || name.length === 0
 		|| !type || typeof type !== 'string' || type.length === 0 || !CredentialTypes.includes(type as CredentialType)) {
@@ -79,10 +79,42 @@ export async function addCredentialApi(req, res, next) {
 	}
 
 	const credentials: any = {
-		key,
+		key: key || 'sk-CHANGEME', //TODO: dummy key for litellm ollama
 	};
-	if (endpointURL) {
-		credentials['endpointURL'] = endpointURL;
+	if (api_base) {
+		credentials['api_base'] = api_base;
+		credentials['endpointURL'] = api_base;
+	}
+
+	if (type === CredentialType.OLLAMA) { //TODO: in future, any model that goes through litellm
+		// Make an API call to create the model in litellm
+		/*
+curl -X 'POST' \
+  'http://localhost:4000/model/new' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer sk-CHANGEME' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "model_name": "whatever-you-want",
+  "litellm_params": {
+    "model": "ollama/llama2",
+    "api_key": "x",
+    "api_base": "http://localhost:11434"
+  }
+}'
+		*/
+		
+		const addedCredential = await addCredential({
+			orgId: res.locals.matchingOrg.id,
+			teamId: toObjectId(req.params.resourceSlug),
+		    name,
+		    createdDate: new Date(),
+		    type: CredentialType.OPENAI,
+		    credentials,
+		});
+
+		return dynamicResponse(req, res, 302, { _id: addedCredential.insertedId, redirect: `/${req.params.resourceSlug}/credentials` });
+		
 	}
 
 	const addedCredential = await addCredential({
@@ -91,10 +123,7 @@ export async function addCredentialApi(req, res, next) {
 	    name,
 	    createdDate: new Date(),
 	    type: type as CredentialType,
-	    credentials: {
-    		key,
-    		endpointURL,
-    	},
+	    credentials,
 	});
 
 	return dynamicResponse(req, res, 302, { _id: addedCredential.insertedId, redirect: `/${req.params.resourceSlug}/credentials` });

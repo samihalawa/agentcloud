@@ -101,21 +101,56 @@ export async function modelAddApi(req, res, next) {
 
 	// Insert model to db
 	const type = credential?.type || CredentialType.FASTEMBED;
-	// if (type === CredentialType.FASTEMBED) {
-	// 	// Insert dummy cred for agent-backend
-	// 	const dummyCred = await addCredential({
-	// 		orgId: res.locals.matchingOrg.id,
-	// 		teamId: toObjectId(req.params.resourceSlug),
-	// 	    name: '-',
-	// 	    createdDate: new Date(),
-	// 	    type,
-	// 	    credentials: {
-	// 			key: null,
-	// 			endpointURL: null
-	// 	    },
-	// 	});
-	// 	credentialId = dummyCred.insertedId;
-	// }
+
+	if (credential.credentials.api_base) { //TODO: in future, any model that goes through litellm
+		// Make an API call to create the model in litellm
+		/*
+curl -X 'POST' \
+  'http://localhost:4000/model/new' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer sk-CHANGEME' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "model_name": "whatever-you-want",
+  "litellm_params": {
+    "model": "ollama/llama2",
+    "api_key": "x",
+    "api_base": "http://localhost:11434"
+  }
+}'
+		*/
+		const litellmResp = await fetch('http://localhost:4000/model/new', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': 'Bearer sk-CHANGEME',
+			},
+			body: JSON.stringify({
+				'model_name': `${req.params.resourceSlug}-ollama/${model}`,
+				'litellm_params': {
+					'model': `ollama/${model}`,
+					'api_key': 'sk-CHANGEME',
+					'api_base': credential.credentials.api_base,
+				},
+			}),
+		}).then(res => res.json());
+		console.log('litellm response:', litellmResp);
+
+		const addedModel = await addModel({
+			orgId: res.locals.matchingOrg.id,
+			teamId: toObjectId(req.params.resourceSlug),
+			name,
+			model: `${req.params.resourceSlug}-ollama/${model}`,
+			embeddingLength: 0,
+			modelType: 'llm',
+			type: CredentialType.OPENAI, //TODO: not this hack
+			...(credentialId ? { credentialId: toObjectId(credentialId) } : {}),
+		});
+
+		return dynamicResponse(req, res, 302, { _id: addedModel.insertedId, redirect: `/${req.params.resourceSlug}/models` });
+		
+	}
+	
 	const addedModel = await addModel({
 		orgId: res.locals.matchingOrg.id,
 		teamId: toObjectId(req.params.resourceSlug),
@@ -208,7 +243,9 @@ async function valdiateCredentialModel(teamId, credentialId, model) {
 	const credential = await getCredentialById(teamId, credentialId);
 	if (credential) {
 		const allowedModels = ModelList[credential.type];
-		return validateField(model, PARENT_OBJECT_FIELD_NAME, { inSet: allowedModels ? new Set(allowedModels) : undefined /* allows invalid types */, customError: `Model ${model} is not valid for provided credential` }, {});
+		return null;
+		//TODO: uncomment
+		//validateField(model, PARENT_OBJECT_FIELD_NAME, { inSet: allowedModels ? new Set(allowedModels) : undefined /* allows invalid types */, customError: `Model ${model} is not valid for provided credential` }, {});
 	} else {
 		return 'Invalid credential';
 	}
