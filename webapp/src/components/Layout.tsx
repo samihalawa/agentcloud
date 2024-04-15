@@ -55,7 +55,7 @@ const agentNavigation: any[] = [
 	{ name: 'Tools', href: '/tools', icon: <WrenchScrewdriverIcon className='h-6 w-6 shrink-0' aria-hidden='true' /> },
 	{ name: 'Data Sources', href: '/datasources', icon: <CircleStackIcon className='h-6 w-6 shrink-0' aria-hidden='true' /> },
 	{ name: 'Models', href: '/models', icon: <CpuChipIcon className='h-6 w-6 shrink-0' aria-hidden='true' /> },
-	{ name: 'Credentials', href: '/credentials', icon: <KeyIcon className='h-6 w-6 shrink-0' aria-hidden='true' /> },
+	{ name: 'Secrets', href: '/secrets', icon: <KeyIcon className='h-6 w-6 shrink-0' aria-hidden='true' /> },
 	// { name: 'Vector Collections', href: '/collections', icon: <Square3Stack3DIcon className='h-6 w-6 shrink-0' aria-hidden='true' /> },
 ];
 

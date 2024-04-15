@@ -34,6 +34,7 @@ import * as credentialController from 'controllers/credential';
 import * as datasourceController from 'controllers/datasource';
 import * as modelController from 'controllers/model';
 import * as notificationController from 'controllers/notification';
+import * as secretController from 'controllers/secret';
 import * as sessionController from 'controllers/session';
 import * as stripeController from 'controllers/stripe';
 import * as taskController from 'controllers/task';
@@ -155,6 +156,14 @@ export default function router(server, app) {
 	teamRouter.get('/credential/:credentialId([a-f0-9]{24}).json', credentialController.credentialJson);
 	teamRouter.post('/forms/credential/add', credentialController.addCredentialApi);
 	teamRouter.delete('/forms/credential/:credentialId([a-f0-9]{24})', credentialController.deleteCredentialApi);
+
+	// secrets
+	teamRouter.get('/secrets', secretController.secretsPage.bind(null, app));
+	teamRouter.get('/secrets.json', secretController.secretsJson);
+	teamRouter.get('/secret/add', secretController.secretAddPage.bind(null, app));
+	teamRouter.get('/secret/:secretId([a-f0-9]{24}).json', secretController.secretJson);
+	teamRouter.post('/forms/secret/add', secretController.addSecretApi);
+	teamRouter.delete('/forms/secret/:secretId([a-f0-9]{24})', secretController.deleteSecretApi);
 
 	//tools
 	teamRouter.get('/tools', toolController.toolsPage.bind(null, app));

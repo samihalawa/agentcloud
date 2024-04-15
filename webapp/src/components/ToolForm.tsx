@@ -30,7 +30,7 @@ const authorizationMethods = [
 	{ label: 'Custom', value: 'custom' },
 ];
 
-export default function ToolForm({ tool = {}, credentials = [], datasources=[], editing, callback, compact }: { tool?: any, credentials?: any[], datasources?: any[], editing?: boolean, callback?: Function, compact?: boolean }) { //TODO: fix any type
+export default function ToolForm({ tool = {}, datasources=[], editing, callback, compact }: { tool?: any, datasources?: any[], editing?: boolean, callback?: Function, compact?: boolean }) { //TODO: fix any type
 
 	const [accountContext]: any = useAccountContext();
 	const { account, csrf } = accountContext as any;
@@ -333,7 +333,7 @@ export default function ToolForm({ tool = {}, credentials = [], datasources=[], 
 
 				{toolType === ToolType.RAG_TOOL && <>
 					<div className='sm:col-span-12'>
-						<label htmlFor='credentialId' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+						<label htmlFor='datasourceId' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
 							Datasources (Optional)
 						</label>
 						<div className='mt-2'>
