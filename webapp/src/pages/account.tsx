@@ -14,7 +14,7 @@ export default function Account(props) {
 	const router = useRouter();
 	const [state, dispatch] = useState(props);
 	const [error, setError] = useState();
-	const { resourceSlug } = router.query;
+	const resourceSlug = router?.query?.resourceSlug || account?.currentTeam;
 
 	// Add this function to handle setting plans
 	async function adminEditAction(e, action) {

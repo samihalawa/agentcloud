@@ -3,8 +3,8 @@ import NProgress from 'nprogress';
 // Account
 export function getAccount(body, dispatch, errorCallback, router) {
 	const queryString = new URLSearchParams({
-		memberId: body?.memberId,
-		resourceSlug: body?.resourceSlug,
+		...(body?.memberId ? { memberId: body.memberId } : {}),
+		...(body?.resourceSlug ? { resourceSlug: body.resourceSlug } : {}),
 	}).toString();
 	return ApiCall(`/account.json?${queryString}`, 'GET', null, dispatch, errorCallback, router);
 }

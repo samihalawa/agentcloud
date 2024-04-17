@@ -17,16 +17,20 @@ function getTeamAndOrgName(data) {
 export function AccountWrapper({ children, pageProps }) {
 
 	const router = useRouter();
-	const { resourceSlug, memberId } = (router?.query||{});
+	const memberId = router?.query?.memberId;
 	const [sharedState, setSharedState] = useState({
 		...pageProps,
 		...getTeamAndOrgName(pageProps),
 		switching: false,
 		permissions: new Permission(pageProps?.account?.permissions),
 	});
+	const resourceSlug = router?.query?.resourceSlug || sharedState?.account?.currentTeam;
 
 	function refreshAccountContext() {
-		API.getAccount({ resourceSlug, memberId }, (data) => {
+		API.getAccount({
+			resourceSlug,
+			memberId: memberId || null,
+		}, (data) => {
 			console.log('refreshAccountContext data', data?.account?.permissions);
 			const updatedState = {
 				...pageProps,

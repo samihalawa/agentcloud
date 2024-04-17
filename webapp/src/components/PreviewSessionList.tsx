@@ -20,7 +20,7 @@ export default function PreviewSessionList(props) {
 	const [accountContext]: any = useAccountContext();
 	const { account, teamName, csrf } = accountContext as any;
 	const router = useRouter();
-	const { resourceSlug } = router?.query;
+	const resourceSlug = router?.query?.resourceSlug || account?.currentTeam;
 	const [state, dispatch] = useState(props);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState();

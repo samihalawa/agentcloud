@@ -5,9 +5,9 @@ interface SpinnerProps {
     color?: string,
 }
 
-const Spinner: React.FC<SpinnerProps> = function ({ loadingText, color = 'white' }) {
+const Spinner: React.FC<SpinnerProps> = function ({ loadingText, color = 'white', size=16 }) {
 
-	const spinnerClasses = `w-16 h-16 rounded-full animate-spin border-4 border-solid border-${color}-500 border-t-transparent`;
+	const spinnerClasses = `w-${size} h-${size} rounded-full animate-spin border-4 border-solid border-${color}-500 border-t-transparent`;
 
 	return (
 		<div className='absolute left-1/2 bottom-1/2  transform translate-x-1/2 translate-y-1/2 '>

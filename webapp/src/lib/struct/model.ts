@@ -1,7 +1,7 @@
 'use strict';
 
-import { ObjectId } from 'mongodb';
 import { IdOrStr } from 'db/index';  // Ensure IdOrStr is exported from the relevant module
+import { ObjectId } from 'mongodb';
 
 export enum ModelType {
     EMBEDDING = 'embedding',
@@ -73,38 +73,38 @@ export enum HuggingFaceModels {
 }
 
 export const ModelList = {
-    [ModelSystem.OPENAI]: [
-        { name: OpenAIModels.TEXT_EMBEDDING_LARGE, capabilities: [ModelCapability.EMBEDDING] },
-        { name: OpenAIModels.TEXT_EMBEDDING_SMALL, capabilities: [ModelCapability.EMBEDDING] },
-        { name: OpenAIModels.TEXT_EMBEDDING_ADA, capabilities: [ModelCapability.EMBEDDING] },
-        { name: OpenAIModels.GPT4, capabilities: [ModelCapability.LLM] },
-        { name: OpenAIModels.GPT35_TURBO, capabilities: [ModelCapability.LLM] },
-        { name: OpenAIModels.GPT35_TURBO_0125, capabilities: [ModelCapability.LLM] },
-        { name: OpenAIModels.GPT4_1106_PREVIEW, capabilities: [ModelCapability.LLM] }
-    ],
-    [ModelSystem.FASTEMBED]: [
-        { name: FastEmbedModels.FAST_BGE_SMALL_EN, capabilities: [ModelCapability.EMBEDDING] },
-        { name: FastEmbedModels.FAST_BGE_BASE_EN, capabilities: [ModelCapability.EMBEDDING] },
-        { name: FastEmbedModels.FAST_BGE_SMALL_EN_V15, capabilities: [ModelCapability.EMBEDDING] },
-        { name: FastEmbedModels.FAST_BGE_BASE_EN_V15, capabilities: [ModelCapability.EMBEDDING] },
-        { name: FastEmbedModels.FAST_MULTILINGUAL_E5_LARGE, capabilities: [ModelCapability.EMBEDDING] }
-    ],
-    [ModelSystem.OLLAMA]: [
-        { name: OllamaModels.MISTRAL, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.LLAMA2, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.LLAMA2_13B, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.LLAMA2_70B, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.LLAMA2_UNCENSORED, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.CODELLAMA, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.ORCA_MINI, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.VICUNA, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.NOUS_HERMES, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.NOUS_HERMES_13B, capabilities: [ModelCapability.LLM] },
-        { name: OllamaModels.WIZARD_VICUNA, capabilities: [ModelCapability.LLM] }
-    ],
-    [ModelSystem.HUGGING_FACE]: [
-        { name: HuggingFaceModels.COMING_SOON, capabilities: [] }
-    ]
+	[ModelSystem.OPENAI]: [
+		{ name: OpenAIModels.TEXT_EMBEDDING_LARGE, capabilities: [ModelCapability.EMBEDDING] },
+		{ name: OpenAIModels.TEXT_EMBEDDING_SMALL, capabilities: [ModelCapability.EMBEDDING] },
+		{ name: OpenAIModels.TEXT_EMBEDDING_ADA, capabilities: [ModelCapability.EMBEDDING] },
+		{ name: OpenAIModels.GPT4, capabilities: [ModelCapability.LLM] },
+		{ name: OpenAIModels.GPT35_TURBO, capabilities: [ModelCapability.LLM] },
+		{ name: OpenAIModels.GPT35_TURBO_0125, capabilities: [ModelCapability.LLM] },
+		{ name: OpenAIModels.GPT4_1106_PREVIEW, capabilities: [ModelCapability.LLM] }
+	],
+	[ModelSystem.FASTEMBED]: [
+		{ name: FastEmbedModels.FAST_BGE_SMALL_EN, capabilities: [ModelCapability.EMBEDDING] },
+		{ name: FastEmbedModels.FAST_BGE_BASE_EN, capabilities: [ModelCapability.EMBEDDING] },
+		{ name: FastEmbedModels.FAST_BGE_SMALL_EN_V15, capabilities: [ModelCapability.EMBEDDING] },
+		{ name: FastEmbedModels.FAST_BGE_BASE_EN_V15, capabilities: [ModelCapability.EMBEDDING] },
+		{ name: FastEmbedModels.FAST_MULTILINGUAL_E5_LARGE, capabilities: [ModelCapability.EMBEDDING] }
+	],
+	[ModelSystem.OLLAMA]: [
+		{ name: OllamaModels.MISTRAL, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.LLAMA2, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.LLAMA2_13B, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.LLAMA2_70B, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.LLAMA2_UNCENSORED, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.CODELLAMA, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.ORCA_MINI, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.VICUNA, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.NOUS_HERMES, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.NOUS_HERMES_13B, capabilities: [ModelCapability.LLM] },
+		{ name: OllamaModels.WIZARD_VICUNA, capabilities: [ModelCapability.LLM] }
+	],
+	[ModelSystem.HUGGING_FACE]: [
+		{ name: HuggingFaceModels.COMING_SOON, capabilities: [] }
+	]
 };
 
 export const ModelEmbeddingLength = {
