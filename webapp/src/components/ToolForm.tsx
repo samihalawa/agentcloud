@@ -30,7 +30,7 @@ const authorizationMethods = [
 	{ label: 'Custom', value: 'custom' },
 ];
 
-export default function ToolForm({ tool = {}, datasources=[], editing, callback, compact }: { tool?: any, datasources?: any[], editing?: boolean, callback?: Function, compact?: boolean }) { //TODO: fix any type
+export default function ToolForm({ tool = {}, datasources=[], secrets=[], editing, callback, compact }: { tool?: any, datasources?: any[], secrets?: any[], editing?: boolean, callback?: Function, compact?: boolean }) { //TODO: fix any type
 
 	const [accountContext]: any = useAccountContext();
 	const { account, csrf } = accountContext as any;

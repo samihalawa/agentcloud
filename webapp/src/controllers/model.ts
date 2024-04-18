@@ -3,12 +3,11 @@
 import { dynamicResponse } from '@dr';
 import { removeAgentsModel } from 'db/agent';
 import { addModel, deleteModelById, getModelById, getModelsByTeam,updateModel } from 'db/model';
-import { getSecretById, getSecretsById, getSecretsByTeam } from 'db/secret';
+import { getSecretById, getSecretsByTeam } from 'db/secret';
 import dotenv from 'dotenv';
 import toObjectId from 'misc/toobjectid';
 import { ObjectId } from 'mongodb';
-import { CredentialType } from 'struct/credential';
-import { ModelEmbeddingLength, ModelList } from 'struct/model';
+import { ModelEmbeddingLength, ModelList, ModelSystem } from 'struct/model';
 import { chainValidations, PARENT_OBJECT_FIELD_NAME, validateField } from 'utils/validationUtils';
 
 import { addCredential, deleteCredentialById } from '../db/credential';
@@ -74,7 +73,7 @@ export async function modelAddPage(app, req, res, next) {
 
 export async function modelAddApi(req, res, next) {
 
-	let { name, model, modelType, modelSystem, credentialId }  = req.body;
+	let { name, model, modelType, modelSystem, credentialId, litellm_params }  = req.body;
 
 	let validationError = chainValidations(req.body, [
 		{ field: 'name', validation: { notEmpty: true }},
@@ -85,53 +84,34 @@ export async function modelAddApi(req, res, next) {
 		return dynamicResponse(req, res, 400, { error: validationError });
 	}
 
-	//TODO secrets: loop through keys in config, perform substitution
-
-	// Insert model to db
-	const type = credential?.type || CredentialType.FASTEMBED;
+	//TODO secrets: loop through keys in litellm_params, perform substitution with secrets
 
 	if (modelSystem !== ModelSystem.FASTEMBED) {
 		const litellmResp = await fetch(`${process.env.FASTEMBED_BASE_URL}/model/new`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': 'Bearer sk-CHANGEME',
+				'Authorization': 'Bearer sk-CHANGEME', //TODO: make an env for litellm cred
 			},
 			body: JSON.stringify({
-				'model_name': `${req.params.resourceSlug}-ollama/${model}`,
+				'model_name': `${req.params.resourceSlug}/${name}`,
 				'litellm_params': {
-					'model': `ollama/${model}`,
-					'api_key': 'sk-CHANGEME',
-					'api_base': credential.credentials.api_base,
+					'model': `${modelSystem}/${model}`,
+					...litellm_params, //TODO: validation
 				},
 			}),
 		}).then(res => res.json());
 		console.log('litellm response:', litellmResp);
-
-		const addedModel = await addModel({
-			orgId: res.locals.matchingOrg.id,
-			teamId: toObjectId(req.params.resourceSlug),
-			name,
-			model: `${req.params.resourceSlug}-ollama/${model}`,
-			embeddingLength: 0,
-			modelType: 'llm',
-			type: CredentialType.OPENAI, //TODO: not this hack
-			...(credentialId ? { credentialId: toObjectId(credentialId) } : {}),
-		});
-
-		return dynamicResponse(req, res, 302, { _id: addedModel.insertedId, redirect: `/${req.params.resourceSlug}/models` });
-		
 	}
-	
+
 	const addedModel = await addModel({
 		orgId: res.locals.matchingOrg.id,
 		teamId: toObjectId(req.params.resourceSlug),
 		name,
-		model,
+		model: `${req.params.resourceSlug}/${name}`,
 		embeddingLength: ModelEmbeddingLength[model] || 0,
-		modelType: ModelEmbeddingLength[model] ? 'embedding' : 'llm',
-		type,
-		...(credentialId ? { credentialId: toObjectId(credentialId) } : {}),
+		modelType,
+		type: modelSystem === ModelSystem.FASTEMBED ? ModelSystem.FASTEMBED : ModelSystem.OPENAI, //Anything not fastembed is open_ai (for litellm)
 	});
 
 	return dynamicResponse(req, res, 302, { _id: addedModel.insertedId, redirect: `/${req.params.resourceSlug}/models` });
