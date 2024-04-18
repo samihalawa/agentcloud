@@ -3,37 +3,36 @@
 import { dynamicResponse } from '@dr';
 import { removeAgentsModel } from 'db/agent';
 import { addModel, deleteModelById, getModelById, getModelsByTeam,updateModel } from 'db/model';
-import { getSecretById, getSecretsByTeam } from 'db/secret';
+import { addSecret, getSecretById, getSecretsByTeam } from 'db/secret';
 import dotenv from 'dotenv';
 import toObjectId from 'misc/toobjectid';
 import { ObjectId } from 'mongodb';
 import { ModelEmbeddingLength, ModelList, ModelSystem } from 'struct/model';
 import { chainValidations, PARENT_OBJECT_FIELD_NAME, validateField } from 'utils/validationUtils';
 
-import { addCredential, deleteCredentialById } from '../db/credential';
 dotenv.config({ path: '.env' });
 
 export async function modelsData(req, res, _next) {
-	const [models, credentials] = await Promise.all([
+	const [models, secrets] = await Promise.all([
 		getModelsByTeam(req.params.resourceSlug),
 		getSecretsByTeam(req.params.resourceSlug)
 	]);
 	return {
 		csrf: req.csrfToken(),
 		models,
-		credentials,
+		secrets,
 	};
 }
 
 export async function modelData(req, res, _next) {
-	const [model, credentials] = await Promise.all([
+	const [model, secrets] = await Promise.all([
 		getModelById(req.params.resourceSlug, req.params.modelId),
 		getSecretsByTeam(req.params.resourceSlug),
 	]);
 	return {
 		csrf: req.csrfToken(),
 		model,
-		credentials,
+		secrets,
 	};
 }
 
@@ -73,13 +72,12 @@ export async function modelAddPage(app, req, res, next) {
 
 export async function modelAddApi(req, res, next) {
 
-	let { name, model, modelType, modelSystem, credentialId, litellm_params }  = req.body;
+	let { name, model, modelType, modelSystem, litellm_params }  = req.body;
 
 	let validationError = chainValidations(req.body, [
 		{ field: 'name', validation: { notEmpty: true }},
-		// { field: 'credentialId', validation: { notEmpty: true, hasLength: 24 }},
 		{ field: 'model', validation: { notEmpty: true }},
-	], { name: 'Name', credentialId: 'Credential', model: 'Model'});
+	], { name: 'Name', model: 'Model'});
 	if (validationError) {	
 		return dynamicResponse(req, res, 400, { error: validationError });
 	}
@@ -126,9 +124,8 @@ export async function editModelApi(req, res, next) {
 
 	let validationError = chainValidations(req.body, [
 		{ field: 'name', validation: { notEmpty: true }},
-		// { field: 'credentialId', validation: { notEmpty: true, hasLength: 24 }},
 		{ field: 'model', validation: { notEmpty: true }},
-	], { name: 'Name', credentialId: 'Credential', model: 'Model'});
+	], { name: 'Name', model: 'Model'});
 	if (validationError) {	
 		return dynamicResponse(req, res, 400, { error: validationError });
 	}
@@ -203,7 +200,7 @@ export async function deleteModelApi(req, res, next) {
 	Promise.all([
 		removeAgentsModel(req.params.resourceSlug, modelId),
 		deleteModelById(req.params.resourceSlug, modelId),
-		model?.type === CredentialType.FASTEMBED ? deleteCredentialById(req.params.resourceSlug, model.credentialId) : void 0, //Delete dumym cred if this is a fastembed model
+		//TODO: remove model from function calling model from any crews
 	]);
 
 	return dynamicResponse(req, res, 302, { /*redirect: `/${req.params.resourceSlug}/credentials`*/ });
