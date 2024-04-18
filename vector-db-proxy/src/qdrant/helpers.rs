@@ -115,6 +115,7 @@ pub async fn embed_payload(
                 // Embedding sentences using OpenAI ADA2
                 let embedding_vec = embed_text(mongo_conn, _id, vec![text], &embedding_model).await?;
                 // Construct PointStruct to insert into DB
+                // todo: need to break this out so that this happens in a different method so we can re-use this for files
                 if !embedding_vec.is_empty() {
                     if let Some(embedding) = embedding_vec.into_iter().next() {
                         let point = PointStruct::new(
@@ -169,11 +170,11 @@ pub async fn construct_point_struct(
                 );
                 Some(qdrant_point_struct)
             } else {
-                eprintln!("Could not convert model to a string slice");
+                log::error!("Could not convert model to a string slice");
                 None
             }
         } else {
-            println!("Embedding Model name is None");
+            log::warn!("Embedding Model name is None");
             None
         };
     }

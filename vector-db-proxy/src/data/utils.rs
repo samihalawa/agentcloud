@@ -6,12 +6,43 @@ use actix_web::dev::ResourcePath;
 use anyhow::anyhow;
 use mongodb::Database;
 use qdrant_client::client::QdrantClient;
-use tokio::sync::{RwLock};
-use crate::data::chunking::{Chunking, TextChunker};
-use crate::data::models::{Document as DocumentModel, FileType};
+use tokio::sync::RwLock;
+use crate::data::text_extraction::TextExtraction;
+use crate::data::models::{Document as DocumentModel, Document, FileType, Sentence};
+use crate::data::text_splitting::TextSplitting;
 use crate::llm::models::EmbeddingModels;
 use crate::mongo::models::ChunkingStrategy;
-use crate::queue::queuing::MyQueue;
+use crate::queue::queuing::Pool;
+
+pub fn calculate_cosine_distances(sentences: &mut Vec<Sentence>) -> Vec<f32> {
+    let mut distances = Vec::new();
+    log::debug!("Sentence Length: {}", sentences.len());
+    let mut distance = 1.0;
+    if sentences.len() > 1 {
+        for i in 0..sentences.len() - 1 {
+            let embedding_current = &sentences[i].sentence_embedding;
+            let embedding_next = &sentences[i + 1].sentence_embedding;
+            log::debug!("Embedding  next: {}", embedding_next);
+            // Calculate cosine similarity
+            let similarity = cosine_similarity(embedding_current, embedding_next);
+            log::debug!("Similarity Score: {}", similarity);
+            // Convert to cosine distance
+            distance = 1.0 - similarity;
+
+            // Append cosine distance to the list
+            distances.push(distance);
+
+            // Store distance in the struct
+            sentences[i].distance_to_next = Some(distance);
+        }
+
+        // Optionally handle the last sentence
+        sentences.last_mut().unwrap().distance_to_next = None; // or a default value
+    } else {
+        distances.push(distance)
+    }
+    distances
+}
 
 pub fn cosine_similarity(a: &Array1<f32>, b: &Array1<f32>) -> f32 {
     let dot_product = a.dot(b);
@@ -36,7 +67,7 @@ pub async fn extract_text_from_file(
     file_path: &str,
     document_name: String,
     datasource_id: String,
-    queue: Arc<RwLock<MyQueue<String>>>,
+    queue: Arc<RwLock<Pool<String>>>,
     qdrant_conn: Arc<RwLock<QdrantClient>>,
     mongo_conn: Arc<RwLock<Database>>,
     // redis_conn_pool: Arc<Mutex<RedisConnection>>,
@@ -44,7 +75,7 @@ pub async fn extract_text_from_file(
     let mut document_text = String::new();
     let mut metadata = HashMap::new();
     let path = file_path.trim_matches('"').path().to_string();
-    let chunker = TextChunker::default();
+    let chunker = TextExtraction::default();
     match file_type {
         FileType::PDF => {
             let path_clone = path.clone();
@@ -81,8 +112,8 @@ pub async fn extract_text_from_file(
     // Once we have extracted the text from the file we no longer need the file and there file we delete from disk
     let path_clone = path.clone();
     match fs::remove_file(path_clone) {
-        Ok(_) => println!("File: {:?} successfully deleted", file_path),
-        Err(e) => println!(
+        Ok(_) => log::debug!("File: {:?} successfully deleted", file_path),
+        Err(e) => log::error!(
             "An error occurred while trying to delete file: {}. Error: {:?}",
             file_path, e
         ),
@@ -101,21 +132,22 @@ pub async fn apply_chunking_strategy_to_document(
     mongo_conn: Arc<RwLock<Database>>,
     datasource_id: String,
 ) -> anyhow::Result<Vec<DocumentModel>> {
-    let chunker = TextChunker::default();
     let embedding_model_choice = EmbeddingModels::from(embedding_models.unwrap());
-    match chunker
-        .chunk(
-            document_text,
-            metadata,
-            chunking_strategy,
-            chunking_character,
-            embedding_model_choice,
-            mongo_conn,
-            datasource_id,
-        )
-        .await
-    {
-        Ok(c) => Ok(c),
-        Err(e) => Err(anyhow!("An error occurred: {}", e)),
-    }
+    let splitter = TextSplitting::new(
+        embedding_model_choice,
+        true,
+        Some(chunking_strategy),
+        chunking_character,
+        mongo_conn,
+        datasource_id,
+    );
+    let doc = Document {
+        page_content: document_text,
+        metadata,
+        embedding_vector: None,
+    };
+    let Ok(results) = splitter.split_documents(vec![doc]).await else {
+        return Err(anyhow!("Chunker returned an empty document!"));
+    };
+    Ok(results)
 }

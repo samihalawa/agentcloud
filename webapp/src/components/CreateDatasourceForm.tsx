@@ -47,7 +47,7 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 	const { account, csrf, teamName } = accountContext as any;
 	const router = useRouter();
 	const { resourceSlug } = router.query;
-	const [error, setError]: any = useState(null);
+	const [error, setError] = useState(null);
 	const [files, setFiles] = useState(null);
 	const [datasourceName, setDatasourceName] = useState('');
 	const [datasourceDescription, setDatasourceDescription] = useState('');
@@ -96,13 +96,24 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 
 	const [connectors, setConnectors] = useState([]);
 	const [connector, setConnector] = useState(null);
+	async function initConnectors() {
+		try {
+			const connectorsJson = await getConnectors();
+			if (!connectorsJson || !connectorsJson?.length) {
+				throw new Error('Falied to fetch connector list, please ensure Airbyte is running.');
+			}
+			setConnectors(connectorsJson);
+		} catch (e) {
+			console.error(e);
+			setError(e?.message || e);
+		}
+	}
 	useEffect(() => {
-		getConnectors()
-			.then(json => setConnectors(json))
-			.catch(e => {
-				toast.error('Failed to fetch source connector list');
-				setConnectors([]);
-			});
+		initConnectors();
+		return () => {
+			setConnectors([]);
+			setConnector(null);
+		};
 	}, []);
 	const connectorOptions = connectors ? Object.keys(connectors)
 		.filter(key => connectors[key]?.connector_type === 'source')
@@ -171,6 +182,7 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 					streams: streamState.streams,
 					selectedFieldsMap: streamState.selectedFieldsMap,
 					datasourceName,
+					datasourceDescription,
 					embeddingField,
 				};
 				const addedDatasource: any = await API.addDatasource(body, () => {
@@ -296,10 +308,11 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 			case 2:
 				return <span className='flex'>
 					<div className='w-full m-auto'>
+						{error && !spec?.schema && <div className='mb-4'><ErrorAlert error={error} /></div>}
 						<Select
 							isClearable
 							isSearchable
-							loading={connectorOptions.length === 0}
+							loading={connectorOptions.length === 0 && !error}
 							primaryColor={'indigo'}
 							classNames={SelectClassNames}
 							value={connector}
@@ -337,7 +350,6 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 								</li>);
 							}}
 						/>
-		
 						{loading
 							? <div className='flex justify-center my-4'>
 								<ButtonSpinner size={24} />
@@ -358,6 +370,20 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 											className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
 										/>
 									</div>
+									<label htmlFor='description' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+										Description<span className='text-red-700'> *</span>
+									</label>
+									<div>
+										<input
+											required
+											type='text'
+											name='description'
+											id='description'
+											onChange={(e) => setDatasourceDescription(e.target.value)}
+											value={datasourceDescription}
+											className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
+										/>
+									</div>
 									<DatasourceScheduleForm
 										scheduleType={scheduleType}
 										setScheduleType={setScheduleType}
@@ -371,7 +397,7 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 										setCronTimezone={setCronTimezone}
 									/>
 								</div>
-								<TailwindForm
+								{spec.schema.connectionSpecification && <TailwindForm
 									schema={spec.schema.connectionSpecification}
 									formData={formData}
 									onChange={(e) => setFormData(e.formData)}
@@ -392,7 +418,7 @@ export default function CreateDatasourceForm({ models, compact, callback, fetchD
 										{submitting && <ButtonSpinner />}
 										{submitting ? 'Testing connection...' : 'Submit'}
 									</button>
-								</TailwindForm>
+								</TailwindForm>}
 							</>}
 		
 					</div>

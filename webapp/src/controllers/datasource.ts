@@ -209,6 +209,13 @@ export async function testDatasourceApi(req, res, next) {
 		return dynamicResponse(req, res, 400, { error: `Failed to discover datasource schema: ${e?.response?.data?.detail || e}` });
 	}
 
+	// Create the collection in qdrant
+	// try {
+	// 	await VectorDBProxy.createCollectionInQdrant(newDatasourceId);
+	// } catch (e) {
+	// 	return dynamicResponse(req, res, 400, { error: 'Failed to create collection in vector database, please try again later.' });
+	// }
+
 	// Create the actual datasource in the db
 	const createdDatasource = await addDatasource({
 	    _id: newDatasourceId,
@@ -340,6 +347,21 @@ export async function addDatasourceApi(req, res, next) {
 		.then(res => res.data);
 	log('createdConnection', JSON.stringify(createdConnection, null, 2));
 
+	// Update the datasource with the connection settings and sync date
+	await Promise.all([
+		setDatasourceConnectionSettings(req.params.resourceSlug, datasourceId, createdConnection.connectionId, connectionBody),
+		// setDatasourceLastSynced(req.params.resourceSlug, datasourceId, new Date()), //NOTE: not being used, updated in webhook handler instead
+		setDatasourceEmbedding(req.params.resourceSlug, datasourceId, modelId, embeddingField),
+	]);
+
+	// Create the collection in qdrant
+	try {
+		await VectorDBProxy.createCollectionInQdrant(datasourceId);
+	} catch (e) {
+		console.error(e);
+		return dynamicResponse(req, res, 400, { error: 'Failed to create collection in vector database, please try again later.' });
+	}
+
 	// Create a job to trigger the connection to sync
 	const jobsApi = await getAirbyteApi(AirbyteApiType.JOBS);
 	const jobBody = {
@@ -351,14 +373,9 @@ export async function addDatasourceApi(req, res, next) {
 		.then(res => res.data);
 	log('createdJob', createdJob);
 
-	// Update the datasource with the connection settings and sync date
-	await Promise.all([
-		setDatasourceConnectionSettings(req.params.resourceSlug, datasourceId, createdConnection.connectionId, connectionBody),
-		// setDatasourceLastSynced(req.params.resourceSlug, datasourceId, new Date()), //NOTE: not being used, updated in webhook handler instead
-		setDatasourceEmbedding(req.params.resourceSlug, datasourceId, modelId, embeddingField),
-		setDatasourceStatus(req.params.resourceSlug, datasourceId, DatasourceStatus.PROCESSING),
-	]);
-
+	// Set status to processing after jub submission
+	await setDatasourceStatus(req.params.resourceSlug, datasourceId, DatasourceStatus.PROCESSING);
+	
 	//TODO: on any failures, revert the airbyte api calls like a transaction
 
 	// Add a tool automatically for the datasource
@@ -366,7 +383,7 @@ export async function addDatasourceApi(req, res, next) {
 	await addTool({
 		orgId: res.locals.matchingOrg.id,
 		teamId: toObjectId(req.params.resourceSlug),
-		name: `"${datasourceName}" RAG tool`,
+		name: datasourceName,
 		description: datasourceDescription,
 		type: ToolType.RAG_TOOL,
 		datasourceId: toObjectId(datasourceId),
@@ -552,6 +569,13 @@ export async function updateDatasourceStreamsApi(req, res, next) {
 	}
 
 	if (sync === true) {
+		// Create the collection in qdrant
+		try {
+			await VectorDBProxy.createCollectionInQdrant(datasourceId);
+		} catch (e) {
+			console.error(e);
+			return dynamicResponse(req, res, 400, { error: 'Failed to create collection in vector database, please try again later.' });
+		}
 		// Create a job to trigger the connection to sync
 		const jobsApi = await getAirbyteApi(AirbyteApiType.JOBS);
 		const jobBody = {
@@ -588,6 +612,14 @@ export async function syncDatasourceApi(req, res, next) {
 
 	if (!datasource) {
 		return dynamicResponse(req, res, 400, { error: 'Invalid inputs' });
+	}
+
+	// Create the collection in qdrant
+	try {
+		await VectorDBProxy.createCollectionInQdrant(datasourceId);
+	} catch (e) {
+		console.error(e);
+		return dynamicResponse(req, res, 400, { error: 'Failed to create collection in vector database, please try again later.' });
 	}
 
 	// Create a job to trigger the connection to sync
@@ -635,6 +667,7 @@ export async function deleteDatasourceApi(req, res, next) {
 	try {
 		await VectorDBProxy.deleteCollectionFromQdrant(req.params.datasourceId);
 	} catch (e) {
+		console.error(e);
 		return dynamicResponse(req, res, 400, { error: 'Failed to delete points from vector database, please try again later.' });
 	}
 
@@ -742,6 +775,16 @@ export async function uploadFileApi(req, res, next) {
 	// Send the gcs file path to rabbitmq
 	const storageProvider = StorageProviderFactory.getStorageProvider();
 	await storageProvider.addFile(filename, uploadedFile);
+
+	// Create the collection in qdrant
+	try {
+		await VectorDBProxy.createCollectionInQdrant(newDatasourceId);
+	} catch (e) {
+		console.error(e);
+		return dynamicResponse(req, res, 400, { error: 'Failed to create collection in vector database, please try again later.' });
+	}
+
+	// Tell the vector proxy to process it	
 	await sendMessage(JSON.stringify({
 		bucket: process.env.NEXT_PUBLIC_GCS_BUCKET_NAME,
 		filename,
@@ -758,7 +801,7 @@ export async function uploadFileApi(req, res, next) {
 	await addTool({
 		orgId: res.locals.matchingOrg.id,
 		teamId: toObjectId(req.params.resourceSlug),
-		name: `"${name}" RAG tool`,
+		name: name,
 		description: datasourceDescription,
 		type: ToolType.RAG_TOOL,
 		datasourceId: toObjectId(newDatasourceId),
