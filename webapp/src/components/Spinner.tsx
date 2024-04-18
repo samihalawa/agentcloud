@@ -2,7 +2,8 @@ import React from 'react';
 
 interface SpinnerProps {
     loadingText?: string;
-    color?: string,
+    color?: string;
+    size?: number;
 }
 
 const Spinner: React.FC<SpinnerProps> = function ({ loadingText, color = 'white', size=16 }) {

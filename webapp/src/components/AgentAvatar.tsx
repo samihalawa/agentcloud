@@ -1,6 +1,6 @@
+import ButtonSpinner from 'components/ButtonSpinner';
 import Blockies from 'react-blockies';
 import StorageProviderFactory from 'storage/index';
-import ButtonSpinner from 'components/ButtonSpinner';
 
 export default function AgentAvatar({ agent, fill=false, size=16, loading=true }) {
 	const storageProvider = StorageProviderFactory.getStorageProvider();
