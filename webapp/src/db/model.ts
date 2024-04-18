@@ -3,20 +3,8 @@
 import * as db from 'db/index';
 import toObjectId from 'misc/toobjectid';
 import { ObjectId } from 'mongodb';
-import { CredentialType } from 'struct/credential';
 import { InsertResult } from 'struct/db';
-
-export type Model = {
-	_id?: ObjectId;
-	orgId: ObjectId;
-	teamId: ObjectId;
-	credentialId?: ObjectId; //id of credential (holds key) in credentials db 
-	name: string;
-	model: string;
-	modelType: string; //'embedding' | 'llm'
-	embeddingLength: number;
-	type?: CredentialType; //redundant
-}
+import { Model } from 'struct/model';
 
 export function ModelCollection(): any {
 	return db.db().collection('models');

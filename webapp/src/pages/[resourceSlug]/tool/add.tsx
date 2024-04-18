@@ -16,7 +16,7 @@ export default function AddTool(props) {
 	const { resourceSlug } = router.query;
 	const [state, dispatch] = useState(props);
 	const [error, setError] = useState();
-	const { tools, credentials, datasources } = state;
+	const { tools, datasources } = state;
 
 	function fetchTools() {
 		API.getTools({ resourceSlug }, dispatch, setError, router);

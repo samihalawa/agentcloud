@@ -30,7 +30,7 @@ export default function Tools(props) {
 		fetchTools();
 	}, [resourceSlug]);
 
-	const { tools, credentials } = state;
+	const { tools, secrets } = state;
 
 	if (!tools) {
 		return <Spinner />;
@@ -62,7 +62,7 @@ export default function Tools(props) {
 			buttonIcon={<PlusIcon className='-ml-0.5 mr-1.5 h-5 w-5' aria-hidden='true' />}
 			buttonMessage={'New Tool'}
 		/>}
-		<ToolList tools={tools} fetchTools={fetchTools} />
+		<ToolList secrets={secrets} tools={tools} fetchTools={fetchTools} />
 
 	</>);
 

@@ -13,7 +13,7 @@ export default function CreateToolModal({ open, setOpen, callback }) {
 	const { resourceSlug } = router.query;
 	const [state, dispatch] = useState({});
 	const [error, setError] = useState();
-	const { agents, models, tools, datasources } = state as any;
+	const { agents, models, tools, datasources, secrets } = state as any;
 
 	async function fetchToolFormData() {
 		await API.getTools({ resourceSlug }, dispatch, setError, router);
@@ -56,7 +56,7 @@ export default function CreateToolModal({ open, setOpen, callback }) {
 									</Dialog.Title>
 									<div className='mt-2'>
 										<ToolForm
-											// credentials={credentials}
+											secrets={secrets}
 											compact={true}
 											callback={callback}
 											datasources={datasources} 

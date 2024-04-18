@@ -13,6 +13,7 @@ Mandatory:
 - `JWT_SECRET` - secret used to sign JWTs
 - `COOKIE_SECRET` - secret used to sign cookies
 - `URL_APP` - url of the frontend webapp, e.g. `http://localhost:3000`
+- `URL_LITELLM` - url of litellm, e.g. `http://localhost:4000`
 - `AGENT_BACKEND_SOCKET_TOKEN` - token to identify agent backend in socket session
 - `AIRBYTE_WEB_URL` - http://localhost:8000
 - `AIRBYTE_API_URL` - http://localhost:8006

@@ -9,25 +9,25 @@ import { toast } from 'react-toastify';
 import * as API from '../api';
 import { useAccountContext } from '../context/account';
 
-export default function CredentialTable({ credentials, fetchCredentials }: { credentials: any[], fetchCredentials?: any }) {
+export default function SecretTable({ secrets, fetchSecrets }: { secrets: any[], fetchSecrets?: any }) {
 
 	const [accountContext]: any = useAccountContext();
 	const { csrf } = accountContext as any;
 	const router = useRouter();
 	const { resourceSlug } = router.query;
-	const [deletingCredential, setDeletingCredential] = useState(null);
+	const [deletingSecret, setDeletingSecret] = useState(null);
 	const [open, setOpen] = useState(false);
 
-	async function deleteCredential() {
-		await API.deleteCredential({
+	async function deleteSecret() {
+		await API.deleteSecret({
 			_csrf: csrf,
-			credentialId: deletingCredential._id,
+			secretId: deletingSecret._id,
 			resourceSlug,
 		}, () => {
-			fetchCredentials();
-			toast('Deleted credential');
+			fetchSecrets();
+			toast('Deleted secret');
 		}, () => {
-			toast.error('Error deleting credential');
+			toast.error('Error deleting secret');
 		}, router);
 		setOpen(false);
 	}
@@ -36,7 +36,7 @@ export default function CredentialTable({ credentials, fetchCredentials }: { cre
 		let timeout;
 		if (!open) {
 			timeout = setTimeout(() => {
-				setDeletingCredential(null);
+				setDeletingSecret(null);
 			}, 500);
 		}
 		return () => clearTimeout(timeout);
@@ -46,12 +46,12 @@ export default function CredentialTable({ credentials, fetchCredentials }: { cre
 		<>
 			<DeleteModal
 				open={open}
-				confirmFunction={deleteCredential}
+				confirmFunction={deleteSecret}
 				cancelFunction={() => {
 					setOpen(false);
 				}}
-				title={'Delete Credential'}
-				message={deletingCredential && `Are you sure you want to delete the ${deletingCredential?.type} credential "${deletingCredential?.name}". This action cannot be undone.`}
+				title={'Delete Secret'}
+				message={deletingSecret && `Are you sure you want to delete the secret "${deletingSecret?.name}". This action cannot be undone.`}
 			/>
 			<div className='rounded-lg overflow-hidden shadow overflow-x-auto'>
 				<table className='min-w-full divide-y divide-gray-200'>
@@ -61,11 +61,7 @@ export default function CredentialTable({ credentials, fetchCredentials }: { cre
 								Name
 							</th>
 							<th scope='col' className='w-min px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Type
-							</th>
-							{/* Add more columns as necessary */}
-							<th scope='col' className='w-min px-6 py-3 w-20 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Endpoint
+								Value
 							</th>
 							<th scope='col' className='w-min px-6 py-3 w-20 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
 								Actions
@@ -73,22 +69,19 @@ export default function CredentialTable({ credentials, fetchCredentials }: { cre
 						</tr>
 					</thead>
 					<tbody className='bg-white divide-y divide-gray-200'>
-						{credentials.map((credential) => (
-							<tr key={credential._id}>
+						{secrets.map((secret) => (
+							<tr key={secret._id}>
 								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='text-sm text-gray-900'>{credential.name}</div>
+									<div className='text-sm text-gray-900'>{secret.name}</div>
 								</td>
 								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='text-sm text-gray-900'>{credential.type}</div>
-								</td>
-								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='text-sm text-gray-900'>{credential?.credentials?.endpointURL || '-'}</div>
+									<div className='text-sm text-gray-900'>***</div>
 								</td>
 								{/* Add more columns as necessary */}
 								<td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
 									<button
 										onClick={() => {
-											setDeletingCredential(credential);
+											setDeletingSecret(secret);
 											setOpen(true);
 										}}
 										className='text-red-500 hover:text-red-700'

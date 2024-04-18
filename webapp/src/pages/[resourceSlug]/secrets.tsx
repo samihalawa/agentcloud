@@ -1,7 +1,7 @@
 import { PlusIcon } from '@heroicons/react/20/solid';
-import CredentialTable from 'components/CredentialTable';
 import NewButtonSection from 'components/NewButtonSection';
 import PageTitleWithNewButton from 'components/PageTitleWithNewButton';
+import SecretTable from 'components/SecretTable';
 import Spinner from 'components/Spinner';
 import { useAccountContext } from 'context/account';
 import Head from 'next/head';
@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react';
 
 import * as API from '../../api';
 
-export default function Credentials(props) {
+export default function Secrets(props) {
 
 	const [accountContext]: any = useAccountContext();
 	const { account, teamName } = accountContext as any;
@@ -19,32 +19,32 @@ export default function Credentials(props) {
 	const { resourceSlug } = router.query;
 	const [state, dispatch] = useState(props);
 	const [error, setError] = useState();
-	const { credentials } = state;
-	function fetchCredentials() {
-		API.getCredentials({ resourceSlug }, dispatch, setError, router);
+	const { secrets } = state;
+	function fetchSecrets() {
+		API.getSecrets({ resourceSlug }, dispatch, setError, router);
 	}
 
 	useEffect(() => {
-		fetchCredentials();
+		fetchSecrets();
 	}, [resourceSlug]);
 
-	if (!credentials) {
+	if (!secrets) {
 		return <Spinner />;
 	}
 
 	return (<>
 
 		<Head>
-			<title>{`Credentials - ${teamName}`}</title>
+			<title>{`Secrets - ${teamName}`}</title>
 		</Head>
 
-		<PageTitleWithNewButton list={credentials} title='Credentials' buttonText='New Credential' href='/credential/add' />
+		<PageTitleWithNewButton list={secrets} title='Secrets' buttonText='New Secret' href='/secret/add' />
 
-		<CredentialTable credentials={credentials} fetchCredentials={fetchCredentials} />
+		<SecretTable secrets={secrets} fetchSecrets={fetchSecrets} />
 
-		{credentials.length === 0 && <NewButtonSection
-			link={`/${resourceSlug}/credential/add`}
-			emptyMessage={'No credentials'}
+		{secrets.length === 0 && <NewButtonSection
+			link={`/${resourceSlug}/secret/add`}
+			emptyMessage={'No secret'}
 			icon={<svg
 				className='mx-auto h-12 w-12 text-gray-400'
 				fill='none'
@@ -56,9 +56,9 @@ export default function Credentials(props) {
 					<path strokeLinecap='round' strokeLinejoin='round' d='M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z' />
 				</svg>
 			</svg>}
-			message={'Get started by adding credentials.'}
+			message={'Get started by adding secrets.'}
 			buttonIcon={<PlusIcon className='-ml-0.5 mr-1.5 h-5 w-5' aria-hidden='true' />}
-			buttonMessage={'Add Credential'}
+			buttonMessage={'Add Secret'}
 		/>}
 
 	</>);

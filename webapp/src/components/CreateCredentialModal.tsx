@@ -1,9 +1,9 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 
-import CredentialForm from './CredentialForm';
+import SecretForm from './SecretForm';
 
-export default function CreateCredentialModal({ open, setOpen, callback }) {
+export default function CreateSecretModal({ open, setOpen, callback }) {
 
 	return (
 		<Transition.Root show={open} as={Fragment}>
@@ -35,11 +35,11 @@ export default function CreateCredentialModal({ open, setOpen, callback }) {
 								<div>
 									<div>
 										<Dialog.Title as='h3' className='mb-4 border-b pb-4 text-base font-semibold leading-6 text-gray-900'>
-											Create a credential
+											Create a secret
 										</Dialog.Title>
 									</div>
 								</div>
-								<CredentialForm compact={true} callback={callback} />
+								<SecretForm compact={true} callback={callback} />
 							</Dialog.Panel>
 						</Transition.Child>
 					</div>

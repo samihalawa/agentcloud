@@ -2,8 +2,8 @@
 
 import { dynamicResponse } from '@dr';
 import { removeAgentsModel } from 'db/agent';
-import { getCredentialById, getCredentialsById, getCredentialsByTeam } from 'db/credential';
 import { addModel, deleteModelById, getModelById, getModelsByTeam,updateModel } from 'db/model';
+import { getSecretById, getSecretsById, getSecretsByTeam } from 'db/secret';
 import dotenv from 'dotenv';
 import toObjectId from 'misc/toobjectid';
 import { ObjectId } from 'mongodb';
@@ -17,7 +17,7 @@ dotenv.config({ path: '.env' });
 export async function modelsData(req, res, _next) {
 	const [models, credentials] = await Promise.all([
 		getModelsByTeam(req.params.resourceSlug),
-		getCredentialsByTeam(req.params.resourceSlug)
+		getSecretsByTeam(req.params.resourceSlug)
 	]);
 	return {
 		csrf: req.csrfToken(),
@@ -29,7 +29,7 @@ export async function modelsData(req, res, _next) {
 export async function modelData(req, res, _next) {
 	const [model, credentials] = await Promise.all([
 		getModelById(req.params.resourceSlug, req.params.modelId),
-		getCredentialsByTeam(req.params.resourceSlug),
+		getSecretsByTeam(req.params.resourceSlug),
 	]);
 	return {
 		csrf: req.csrfToken(),
@@ -74,7 +74,7 @@ export async function modelAddPage(app, req, res, next) {
 
 export async function modelAddApi(req, res, next) {
 
-	let { name, model, credentialId }  = req.body;
+	let { name, model, modelType, modelSystem, credentialId }  = req.body;
 
 	let validationError = chainValidations(req.body, [
 		{ field: 'name', validation: { notEmpty: true }},
@@ -85,41 +85,13 @@ export async function modelAddApi(req, res, next) {
 		return dynamicResponse(req, res, 400, { error: validationError });
 	}
 
-	let credential;
-	if (credentialId && credentialId.length > 0) {
-		// Validate model for credential is valid
-		validationError = await valdiateCredentialModel(req.params.resourceSlug, credentialId, model);
-		if (validationError) {
-			return dynamicResponse(req, res, 400, { error: validationError });
-		}
-		// Check for credential
-		credential = await getCredentialById(req.params.resourceSlug, credentialId);
-		if (!credential) {
-			return dynamicResponse(req, res, 400, { error: 'Invalid credential ID' });
-		}
-	}
+	//TODO secrets: loop through keys in config, perform substitution
 
 	// Insert model to db
 	const type = credential?.type || CredentialType.FASTEMBED;
 
-	if (credential.credentials.api_base) { //TODO: in future, any model that goes through litellm
-		// Make an API call to create the model in litellm
-		/*
-curl -X 'POST' \
-  'http://localhost:4000/model/new' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer sk-CHANGEME' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "model_name": "whatever-you-want",
-  "litellm_params": {
-    "model": "ollama/llama2",
-    "api_key": "x",
-    "api_base": "http://localhost:11434"
-  }
-}'
-		*/
-		const litellmResp = await fetch('http://localhost:4000/model/new', {
+	if (modelSystem !== ModelSystem.FASTEMBED) {
+		const litellmResp = await fetch(`${process.env.FASTEMBED_BASE_URL}/model/new`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -168,7 +140,7 @@ curl -X 'POST' \
 
 export async function editModelApi(req, res, next) {
 
-	let { name, model, credentialId }  = req.body;
+	let { name, model, modelType, modelSystem, config }  = req.body;
 
 	let validationError = chainValidations(req.body, [
 		{ field: 'name', validation: { notEmpty: true }},
@@ -183,24 +155,10 @@ export async function editModelApi(req, res, next) {
 		name,
 		model,
 		embeddingLength: ModelEmbeddingLength[model] || 0,
-		modelType: ModelEmbeddingLength[model] ? 'embedding' : 'llm',
+		modelType: ModelEmbeddingLength[model] ? 'embedding' : 'llm', //TODO secrets: read modelType from body
 	};
 
-	let credential;
-	if (credentialId && credentialId.length > 0) {
-		// Validate model for credential is valid
-		validationError = await valdiateCredentialModel(req.params.resourceSlug, credentialId, model);
-		if (validationError) {
-			return dynamicResponse(req, res, 400, { error: validationError });
-		}
-		// Check for credential
-		credential = await getCredentialById(req.params.resourceSlug, credentialId);
-		if (!credential) {
-			return dynamicResponse(req, res, 400, { error: 'Invalid credential ID' });
-		}
-		update['credentialId'] = credentialId ? toObjectId(credentialId) : null;
-	}
-	update['type'] = credential?.type || CredentialType.FASTEMBED;
+	//TODO secrets: loop through keys in config, perform substitution
 
 	// Insert model to db
 	const updatedModel = await updateModel(req.params.resourceSlug, req.params.modelId, update);
@@ -237,16 +195,4 @@ export async function deleteModelApi(req, res, next) {
 
 	return dynamicResponse(req, res, 302, { /*redirect: `/${req.params.resourceSlug}/credentials`*/ });
 
-}
-
-async function valdiateCredentialModel(teamId, credentialId, model) {
-	const credential = await getCredentialById(teamId, credentialId);
-	if (credential) {
-		const allowedModels = ModelList[credential.type];
-		return null;
-		//TODO: uncomment
-		//validateField(model, PARENT_OBJECT_FIELD_NAME, { inSet: allowedModels ? new Set(allowedModels) : undefined /* allows invalid types */, customError: `Model ${model} is not valid for provided credential` }, {});
-	} else {
-		return 'Invalid credential';
-	}
 }

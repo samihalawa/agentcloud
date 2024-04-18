@@ -34,6 +34,7 @@ export type Model = {
     system: ModelSystem;
     embeddingLength: number;
     config: Record<string, IdOrStr>;  // Configurations can be direct values or references to secrets
+    //TODO: have a specific typing for each vendor
 };
 
 export enum OpenAIModels {

@@ -1,10 +1,10 @@
 import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
 
-import CredentialForm from '../../../components/CredentialForm';
+import SecretForm from '../../../components/SecretForm';
 import { useAccountContext } from '../../../context/account';
 
-export default function AddCredential(props) {
+export default function AddSecret(props) {
 
 	const [accountContext]: any = useAccountContext();
 	const { teamName } = accountContext as any;
@@ -12,10 +12,10 @@ export default function AddCredential(props) {
 	return (<>
 
 		<Head>
-			<title>{`New Credential - ${teamName}`}</title>
+			<title>{`New Secret - ${teamName}`}</title>
 		</Head>
 
-		<CredentialForm />
+		<SecretForm />
 
 	</>);
 

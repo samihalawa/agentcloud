@@ -65,6 +65,7 @@ services:
       - PROJECT_ID=${PROJECT_ID}
       - FROM_EMAIL_ADDRESS=noreply@agentcloud.dev
       - URL_APP=http://127.0.0.1:3000
+      - URL_LITELLM=http://docker_litellm:4000
       - DEBUG=webapp:*
       - STRIPE_WEBHOOK_SECRET=
       - STRIPE_ACCOUNT_SECRET=
@@ -158,6 +159,27 @@ services:
       - '127.0.0.1:6333:6333'
       - '127.0.0.1:6334:6334'
     image: qdrant/qdrant
+# 
+#   docker_litellm:
+#     ports:
+#       - 4000:4000
+#     environment:
+#       STORE_MODEL_IN_DB: true
+#       DATABASE_URL: postgresql://postgres:postgres@docker_postgres:5444/postgres
+#       LITELLM_MASTER_KEY: sk-CHANGEME
+#     # NOTE: the image is litellm-<<database>> for db enabled litellm
+#     image: ghcr.io/berriai/litellm-database:main-latest
+#     command: --detailed_debug
+# 
+#   docker_postgres:
+#     container_name: docker_postgres
+#     ports:
+#       - 5444:5432
+#     environment:
+#       - POSTGRES_USER=postgres
+#       - POSTGRES_PASSWORD=postgres
+#       - POSTGRES_DB=postgres
+#     image: postgres
 
 volumes:
   mongodb_data_container:
@@ -168,3 +190,4 @@ networks:
   default:
     external: true
     name: airbyte_airbyte_internal
+

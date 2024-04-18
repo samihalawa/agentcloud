@@ -24,7 +24,6 @@ export type Tool = {
 		code?: string;
 		openAPIMatchKey?: string;
 	},
-	credentialId?: ObjectId; //links to a credential 
 	icon?: IconAttachment;
 };
 
