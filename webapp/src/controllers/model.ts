@@ -84,6 +84,8 @@ export async function modelAddApi(req, res, next) {
 		return dynamicResponse(req, res, 400, { error: validationError });
 	}
 
+	//TODO secrets: check for a duplicate model by name 
+
 	//TODO secrets: loop through keys in litellm_params, perform substitution with secrets
 
 	if (modelSystem !== ModelSystem.FASTEMBED) {
@@ -110,8 +112,8 @@ export async function modelAddApi(req, res, next) {
 		name,
 		model: `${req.params.resourceSlug}/${name}`,
 		embeddingLength: ModelEmbeddingLength[model] || 0,
-		modelType,
-		type: modelSystem === ModelSystem.FASTEMBED ? ModelSystem.FASTEMBED : ModelSystem.OPENAI, //Anything not fastembed is open_ai (for litellm)
+		system: modelSystem,
+		type: modelType,
 	});
 
 	return dynamicResponse(req, res, 302, { _id: addedModel.insertedId, redirect: `/${req.params.resourceSlug}/models` });
@@ -131,11 +133,42 @@ export async function editModelApi(req, res, next) {
 		return dynamicResponse(req, res, 400, { error: validationError });
 	}
 
+	//TODO secrets: get the model by req.params.modelId and change the following check to if the current model system is/was something other than fastembed, delete the old 
+	
+	/*
+	//TODO secrets: since there is no EDIT api, DELETE the model first, then re-create it:
+	const foundModel = await getModelById(req.params.resourceSlug, req.params.modelId);
+	if (foundModel && foundModel.system !== ModelSystem.FASTEMBED) {
+		//delete the model in litellm
+	}
+	*/
+
+	/*
+	if (modelSystem !== ModelSystem.FASTEMBED) {
+		const litellmResp = await fetch(`${process.env.FASTEMBED_BASE_URL}/model/new`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': 'Bearer sk-CHANGEME', //TODO: make an env for litellm cred
+			},
+			body: JSON.stringify({
+				'model_name': `${req.params.resourceSlug}/${name}`,
+				'litellm_params': {
+					'model': `${modelSystem}/${model}`,
+					...litellm_params, //TODO: validation
+				},
+			}),
+		}).then(res => res.json());
+		console.log('litellm response:', litellmResp);
+	}
+	*/
+
 	const update = {
 		name,
-		model,
+		model: `${req.params.resourceSlug}/${name}`,
 		embeddingLength: ModelEmbeddingLength[model] || 0,
-		modelType: ModelEmbeddingLength[model] ? 'embedding' : 'llm', //TODO secrets: read modelType from body
+		system: modelSystem,
+		type: modelType,
 	};
 
 	//TODO secrets: loop through keys in config, perform substitution
