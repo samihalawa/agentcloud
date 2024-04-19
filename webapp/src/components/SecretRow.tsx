@@ -26,6 +26,7 @@ export default function SecretRow({ secret={}, fetchSecrets }: { secret?: Partia
 	const [label, setLabel] = useState(secret.label || '');
 	const [deletingSecret, setDeletingSecret] = useState(null);
 	const [deleting, setDeleting] = useState(false);
+	const [updating, setUpdating] = useState(false);
 
 	useEffect(() => {
 		let timeout;
@@ -68,6 +69,7 @@ export default function SecretRow({ secret={}, fetchSecrets }: { secret?: Partia
 	}
 	
 	async function saveSecret() {
+		setUpdating(true);
 		const body = {
 			_csrf: csrf,
 			resourceSlug,
@@ -77,16 +79,18 @@ export default function SecretRow({ secret={}, fetchSecrets }: { secret?: Partia
 			label,
 		};
 		try {
-			await API.editSecret(secret._id, body, null, (err) => {
+			await API.editSecret(secret._id, body, async () => {
+				await fetchSecrets && fetchSecrets();
+				setEditing(!editing);
+				setShowPassword(false);
+				setUpdating(false);
+			}, (err) => {
 				toast.error(err);
+				setUpdating(false);
 			}, router);
-			setEditing(!editing);
-			setShowPassword(false);
 		} catch (e) {
 			console.error(e);
 			toast.error('Failed to edit secret');
-		} finally {
-			fetchSecrets && fetchSecrets();
 		}
 	}
 	
@@ -101,7 +105,17 @@ export default function SecretRow({ secret={}, fetchSecrets }: { secret?: Partia
 				title={'Delete Secret'}
 				message={`Are you sure you want to delete the secret "${deletingSecret?.name}". This action cannot be undone.`}
 			/>
-			<div className='text-sm text-gray-900'>{secret.label}</div>
+			{editing
+				? <input
+					id='label'
+					name='label'
+					type='text'
+					required
+					defaultValue={secret.label}
+					onChange={e => setLabel(e.target.value)}
+					className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
+				/>
+				: <div className='text-sm text-gray-900'>{secret.label}</div>}
 		</td>
 		<td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
 			{editing
@@ -123,8 +137,10 @@ export default function SecretRow({ secret={}, fetchSecrets }: { secret?: Partia
 						id='value'
 						name='value'
 						type={showPassword ? 'text' : 'password'}
+						placeholder='Blank = leave unchanged'
 						required
 						defaultValue=''
+						onChange={e => setValue(e.target.value)}
 						className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
 					/>
 					<div onClick={() => setShowPassword(o => !o)} className='cursor-pointer absolute inset-y-0 right-0 flex items-center pr-3'>
@@ -152,9 +168,6 @@ export default function SecretRow({ secret={}, fetchSecrets }: { secret?: Partia
 					onClick={() => {
 						setEditing(!editing);
 						setShowPassword(false);
-						setKey(secret.key);
-						setValue(secret.value);
-						
 					}}
 					className='text-gray-500 hover:text-gray-700'
 				>

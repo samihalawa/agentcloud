@@ -3,6 +3,7 @@
 import { dynamicResponse } from '@dr';
 import { addSecret, deleteSecretById, getSecretById, getSecretsByTeam, updateSecret } from 'db/secret';
 import toObjectId from 'misc/toobjectid';
+import { Secret } from 'struct/secret';
 
 export async function secretsData(req, res, _next) {
 	const secrets = await getSecretsByTeam(req.params.resourceSlug);
@@ -102,18 +103,19 @@ export async function editSecretApi(req, res, next) {
 	const { key, value, label, secretId } = req.body;
 
 	if (!key || typeof key !== 'string' || key.length === 0
-		|| !value || typeof value !== 'string'
 		|| !secretId || typeof secretId !== 'string' || secretId.length === 0) {
 		return dynamicResponse(req, res, 400, { error: 'Invalid inputs' });
 	}
 
 	//TODO: unique index constraint on (teamId, key) to prevent duplicates
 
-	const secretUpdate = {
+	const secretUpdate: Partial<Secret> = {
 		key,
-		value,
 		label,
 	};
+	if (value && typeof value === 'string' && value.length > 0) {
+		secretUpdate.value = value;
+	}
 
 	await updateSecret(req.params.resourceSlug, secretId, secretUpdate);
 
