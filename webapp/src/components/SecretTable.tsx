@@ -73,7 +73,7 @@ export default function SecretTable({ secrets, fetchSecrets }: { secrets: any[],
 					</thead>
 					<tbody className='bg-white divide-y divide-gray-200'>
 						{secrets.map((secret) => (
-							<SecretRow key={secret._id} secret={secret} />
+							<SecretRow key={secret._id} secret={secret} fetchSecrets={fetchSecrets} />
 						))}
 					</tbody>
 				</table>

@@ -153,6 +153,7 @@ export default function router(server, app) {
 	teamRouter.get('/secrets.json', secretController.secretsJson);
 	teamRouter.get('/secret/add', secretController.secretAddPage.bind(null, app));
 	teamRouter.get('/secret/:secretId([a-f0-9]{24}).json', secretController.secretJson);
+	teamRouter.post('/forms/secret/:secretId([a-f0-9]{24})/edit', secretController.editSecretApi);
 	teamRouter.post('/forms/secret/add', secretController.addSecretApi);
 	teamRouter.delete('/forms/secret/:secretId([a-f0-9]{24})', secretController.deleteSecretApi);
 

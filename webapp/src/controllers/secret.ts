@@ -107,6 +107,8 @@ export async function editSecretApi(req, res, next) {
 		return dynamicResponse(req, res, 400, { error: 'Invalid inputs' });
 	}
 
+	//TODO: unique index constraint on (teamId, key) to prevent duplicates
+
 	const secretUpdate = {
 		key,
 		value,
