@@ -19,6 +19,10 @@ export async function getSecretById(teamId: db.IdOrStr, secretId: db.IdOrStr): P
 export async function getSecretsByTeam(teamId: db.IdOrStr): Promise<Secret[]> {
 	return SecretCollection().find({
 		teamId: toObjectId(teamId),
+	}, {
+		projection: {
+			value: 0,
+		},
 	}).toArray();
 }
 
