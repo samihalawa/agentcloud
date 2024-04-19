@@ -32,8 +32,9 @@ export default function SecretForm({ secret={}, editing, compact=false, callback
 		const body = {
 			_csrf: e.target._csrf.value,
 			resourceSlug,
-			name: e.target.name.value,
+			key: e.target.key.value,
 			value: e.target.value.value,
+			label: e.target.label.value,
 		};
 		if (editing) {
 			//TODO: editing? since they cant see the value its just an "overwrite"
@@ -68,7 +69,7 @@ export default function SecretForm({ secret={}, editing, compact=false, callback
 							<input
 								required
 								type='text'
-								name='keu'
+								name='key'
 								id='key'
 								placeholder='api_key'
 								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
@@ -97,14 +98,14 @@ export default function SecretForm({ secret={}, editing, compact=false, callback
 					</div>
 
 					<div className='sm:col-span-12'>
-						<label htmlFor='name' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+						<label htmlFor='label' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
 							Label (Optional)
 						</label>
 						<div className='mt-2'>
 							<input
 								type='text'
-								name='name'
-								id='name'
+								name='label'
+								id='label'
 								placeholder='Secret Name'
 								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
 							/>
