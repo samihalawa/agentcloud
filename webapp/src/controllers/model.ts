@@ -112,6 +112,7 @@ export async function modelAddApi(req, res, next) {
 		embeddingLength: ModelEmbeddingLength[model] || 0,
 		system: modelSystem,
 		type: modelType,
+		config: litellm_params || {},
 	});
 
 	return dynamicResponse(req, res, 302, { _id: addedModel.insertedId, redirect: `/${req.params.resourceSlug}/models` });

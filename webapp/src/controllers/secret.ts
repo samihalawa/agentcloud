@@ -68,7 +68,7 @@ export async function secretJson(req, res, next) {
  * @apiParam {String} value Secret value
  */
 export async function addSecretApi(req, res, next) {
-	const { key, value, name } = req.body;
+	const { key, value, label } = req.body;
 
 	if (!key || typeof key !== 'string' || key.length === 0 ||
         !value || typeof value !== 'string') {
@@ -80,7 +80,7 @@ export async function addSecretApi(req, res, next) {
 		teamId: toObjectId(req.params.resourceSlug),
 		key,
 		value,
-		name,
+		label,
 		createdDate: new Date(),
 	};
 

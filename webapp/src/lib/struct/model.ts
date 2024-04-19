@@ -1,6 +1,5 @@
 'use strict';
 
-import { IdOrStr } from 'db/index';  // Ensure IdOrStr is exported from the relevant module
 import { ObjectId } from 'mongodb';
 
 export enum ModelType {
@@ -33,8 +32,8 @@ export type Model = {
     type: ModelType;
     system: ModelSystem;
     embeddingLength: number;
-    config: Record<string, IdOrStr>;  // Configurations can be direct values or references to secrets
-    //TODO: have a specific typing for each vendor
+    config: Record<string, string>;
+    //TODO: have a specific config typing for each vendor
 };
 
 export enum OpenAIModels {

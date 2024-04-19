@@ -1,5 +1,9 @@
 'use strict';
 
+import {
+	EyeIcon,
+	EyeSlashIcon,
+} from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
@@ -9,7 +13,7 @@ import { ModelSystem } from 'struct/model';
 import * as API from '../api';
 import { useAccountContext } from '../context/account';
 
-export default function SecretForm({ secret, editing, compact=false, callback }
+export default function SecretForm({ secret={}, editing, compact=false, callback }
 	: { secret?: any, editing?: boolean, compact?: boolean, callback?: Function }) { //TODO: fix any type
 
 	const [accountContext]: any = useAccountContext();
@@ -17,6 +21,7 @@ export default function SecretForm({ secret, editing, compact=false, callback }
 	const router = useRouter();
 	const { resourceSlug } = router.query;
 	const [secretState, setSecret] = useState(secret);
+	const [showPassword, setShowPassword] = useState(false);
 	const [error, setError] = useState();
 	const { verifysuccess } = router.query;
 
@@ -28,9 +33,7 @@ export default function SecretForm({ secret, editing, compact=false, callback }
 			_csrf: e.target._csrf.value,
 			resourceSlug,
 			name: e.target.name.value,
-			type: e.target.type.value,
-			key: e.target?.key?.value,
-			api_base: e.target?.api_base?.value,
+			value: e.target.value.value,
 		};
 		if (editing) {
 			//TODO: editing? since they cant see the value its just an "overwrite"
@@ -50,109 +53,66 @@ export default function SecretForm({ secret, editing, compact=false, callback }
 		/>
 		<div className='space-y-12'>
 
-			<div className={`grid grid-cols-1 gap-x-8 gap-y-10 pb-6 border-b border-gray-900/10 pb-${compact ? '6' : '12'} md:grid-cols-${compact ? '1' : '3'}`}>
+			<div className={`grid grid-cols-1 gap-x-8 gap-y-10 pb-6 border-b border-gray-900/10 pb-${compact ? '6' : '12'} md:grid-cols-1`}>
 				{!compact && <div>
 					<h2 className='text-base font-semibold leading-7 text-gray-900 dark:text-white'>Secret</h2>
 					<p className='mt-1 text-sm leading-6 text-gray-600 dark:text-slate-400'>Create secret values i.e. API keys and account IDs to be reused throughout agents, tools, tasks, etc.</p>
 				</div>}
-
 				<div className='grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2'>
 
 					<div className='sm:col-span-12'>
-						<label htmlFor='name' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
-							Name
+						<label htmlFor='value' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+							Key<span className='text-red-700'> *</span>
 						</label>
 						<div className='mt-2'>
 							<input
 								required
 								type='text'
-								name='name'
-								id='name'
+								name='keu'
+								id='key'
+								placeholder='api_key'
 								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
 							/>
 						</div>
 					</div>
 
 					<div className='sm:col-span-12'>
-						<label htmlFor='type' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
-							Type
+						<label htmlFor='password' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+            					Value<span className='text-red-700'> *</span>
 						</label>
-						<div className='mt-2'>
-							<select
+						<div className='relative mt-2'>
+							<input
+								id='value'
+								name='value'
+								type={showPassword ? 'text' : 'password'}
 								required
-								id='type'
-								name='type'
-								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
-								value={type}
-								onChange={e => setSecret({
-									...secretState,
-									type: e.target.value,
-								})}
-							>
-								<option disabled value=''>Select a type...</option>
-								<option value={ModelSystem.OPENAI}>OpenAI</option>
-								<option value={ModelSystem.FASTEMBED}>FastEmbed</option>
-								<option value={ModelSystem.OLLAMA}>Ollama</option>
-								<option disabled value={ModelSystem.HUGGING_FACE}>Hugging Face (Coming soon...)</option>
-							</select>
+								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
+							/>
+							{!editing && <div onClick={() => setShowPassword(o => !o)} className='cursor-pointer absolute inset-y-0 right-0 flex items-center pr-3'>
+								{showPassword
+									? <EyeIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
+									: <EyeSlashIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />}
+							</div>}
 						</div>
 					</div>
 
-					{[ModelSystem.OPENAI].includes(type) && <div className='sm:col-span-12'>
-						<label htmlFor='key' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
-							Key
+					<div className='sm:col-span-12'>
+						<label htmlFor='name' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
+							Label (Optional)
 						</label>
 						<div className='mt-2'>
 							<input
-								required
-								type='password'
-								name='key'
-								id='key'
-								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
-							/>
-						</div>
-					</div>}
-
-					{/*
-						The `name` property of these inputs (for ollama, huggingface, etc) matches the litellm_params: http://localhost:4000/#/model%20management/add_new_model_model_new_post
-					*/}
-					{[ModelSystem.OLLAMA].includes(type) && <div className='sm:col-span-12'>
-						<label htmlFor='api_base' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
-							API Base URL
-						</label>
-						<div className='mt-2'>
-							<input
-								required
-								placeholder='http://localhost:11434'
 								type='text'
-								name='api_base'
-								id='api_base'
+								name='name'
+								id='name'
+								placeholder='Secret Name'
 								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
 							/>
 						</div>
-					</div>}
-
-					{type === ModelSystem.HUGGING_FACE && <div className='sm:col-span-12'>
-						<label htmlFor='key' className='block text-sm font-medium leading-6 text-gray-900 dark:text-slate-400'>
-							Api Key
-						</label>
-						<div className='mt-2'>
-							<input
-								disabled
-								placeholder='Coming soon...'
-								required
-								type='password'
-								name='key'
-								id='key'
-								className='block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 dark:bg-slate-800 dark:ring-slate-600 dark:text-white'
-							/>
-						</div>
-					</div>}
+					</div>
 
 				</div>
-
 			</div>
-
 		</div>
 
 		<div className='mt-6 flex items-center justify-between gap-x-6'>

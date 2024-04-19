@@ -19,7 +19,7 @@ export default function Models(props) {
 	const { resourceSlug } = router.query;
 	const [state, dispatch] = useState(props);
 	const [error, setError] = useState();
-	const { models, secrets } = state;
+	const { models } = state;
 	function fetchModels() {
 		API.getModels({ resourceSlug }, dispatch, setError, router);
 	}
@@ -40,7 +40,7 @@ export default function Models(props) {
 
 		<PageTitleWithNewButton list={models} title='Models' buttonText='New Model' href='/model/add' />
 
-		<ModelTable models={models} fetchModels={fetchModels} secrets={secrets} />
+		<ModelTable models={models} fetchModels={fetchModels} />
 
 		{models.length === 0 && <NewButtonSection
 			link={`/${resourceSlug}/model/add`}

@@ -8,6 +8,6 @@ export type Secret = {
 	teamId: ObjectId;
 	key: string;
 	value: string;  // Secret's value as a simple string
-	name: string;
+	label: string;
 	createdDate: Date;
 };
