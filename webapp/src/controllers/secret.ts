@@ -1,9 +1,8 @@
 'use strict';
 
 import { dynamicResponse } from '@dr';
+import { addSecret, deleteSecretById, getSecretById, getSecretsByTeam, updateSecret } from 'db/secret';
 import toObjectId from 'misc/toobjectid';
-
-import { addSecret, deleteSecretById, getSecretById, getSecretsByTeam } from '../db/secret';
 
 export async function secretsData(req, res, _next) {
 	const secrets = await getSecretsByTeam(req.params.resourceSlug);
@@ -66,6 +65,7 @@ export async function secretJson(req, res, next) {
  *
  * @apiParam {String} key Secret key
  * @apiParam {String} value Secret value
+ * @apiParam {String} label Secret label
  */
 export async function addSecretApi(req, res, next) {
 	const { key, value, label } = req.body;
@@ -87,6 +87,35 @@ export async function addSecretApi(req, res, next) {
 	const addedSecret = await addSecret(newSecret);
 
 	return dynamicResponse(req, res, 302, { _id: addedSecret.insertedId, redirect: `/${req.params.resourceSlug}/secrets` });
+}
+
+/**
+ * @api {post} /forms/secret/:secretId/edit edit a secret
+ * @apiName edit
+ * @apiGroup Secret
+ *
+ * @apiParam {String} label Secret label
+ * @apiParam {String} value Secret value
+ * @apiParam {String} label Secret label
+ */
+export async function editSecretApi(req, res, next) {
+	const { key, value, label, secretId } = req.body;
+
+	if (!key || typeof key !== 'string' || key.length === 0
+		|| !value || typeof value !== 'string'
+		|| !secretId || typeof secretId !== 'string' || secretId.length === 0) {
+		return dynamicResponse(req, res, 400, { error: 'Invalid inputs' });
+	}
+
+	const secretUpdate = {
+		key,
+		value,
+		label,
+	};
+
+	await updateSecret(req.params.resourceSlug, secretId, secretUpdate);
+
+	return dynamicResponse(req, res, 302, { /*redirect: `/${req.params.resourceSlug}/secrets`*/ });
 }
 
 /**

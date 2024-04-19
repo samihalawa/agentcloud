@@ -174,6 +174,9 @@ export function deleteSecret(body, dispatch, errorCallback, router) {
 export function addSecret(body, dispatch, errorCallback, router) {
 	return ApiCall(`/${body.resourceSlug}/forms/secret/add`, 'POST', body, dispatch, errorCallback, router);
 }
+export function editSecret(secretId, body, dispatch, errorCallback, router) {
+	return ApiCall(`/${body.resourceSlug}/forms/secret/${secretId}/edit`, 'POST', body, dispatch, errorCallback, router);
+}
 
 // Datasources
 export function getDatasources(body, dispatch, errorCallback, router) {

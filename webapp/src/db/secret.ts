@@ -22,6 +22,15 @@ export async function getSecretsByTeam(teamId: db.IdOrStr): Promise<Secret[]> {
 	}).toArray();
 }
 
+export async function updateSecret(teamId: db.IdOrStr, secretId: db.IdOrStr, update: Partial<Secret>): Promise<Secret[]> {
+	return SecretCollection().updateOne({
+		_id: toObjectId(secretId),
+		teamId: toObjectId(teamId),
+	}, {
+		$set: update,
+	});
+}
+
 export async function addSecret(secret: Secret): Promise<any> {
 	return SecretCollection().insertOne(secret);
 }

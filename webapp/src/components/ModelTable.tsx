@@ -34,7 +34,7 @@ export default function ModelTable({ models, fetchModels }: { models: any[], fet
 				resourceSlug,
 			}, async () => {
 				await new Promise(res => setTimeout(res, 700-(Date.now()-start)));
-				fetchModels();
+				fetchModels && fetchModels();
 				setDeletingMap(oldMap => {
 					delete oldMap[deletingModel._id];
 					return oldMap;
