@@ -204,6 +204,6 @@ export async function deleteModelApi(req, res, next) {
 		//TODO: remove model from function calling model from any crews
 	]);
 
-	return dynamicResponse(req, res, 302, { /*redirect: `/${req.params.resourceSlug}/credentials`*/ });
+	return dynamicResponse(req, res, 302, { });
 
 }
