@@ -54,6 +54,8 @@ export default function ModelForm({ _model = { type: ModelSystem.OPENAI }, secre
 		setModalOpen(false);
 	};
 
+	console.log(ModelList && ModelList[type] && ModelList[type].map(m => ({ label: m?.name, value: m?.name })))
+	
 	return (<>
 		<CreateSecretModal open={modalOpen} setOpen={setModalOpen} callback={secretCallback} />
 		<form onSubmit={modelPost}>
@@ -167,7 +169,7 @@ export default function ModelForm({ _model = { type: ModelSystem.OPENAI }, secre
   											};
   										});
 				            	}}
-					            options={ModelList && ModelList[type] && ModelList[type].map(m => ({ label: m, value: m }))}
+					            options={ModelList && ModelList[type] && ModelList[type].map(m => ({ label: m?.name, value: m?.name }))}
 					            formatOptionLabel={data => {
 					                return (<li
 					                    className={`block transition duration-200 px-2 py-2 cursor-pointer select-none truncate rounded hover:bg-blue-100 hover:text-blue-500 	${
